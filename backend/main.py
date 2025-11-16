@@ -37,15 +37,28 @@ print(f"Supabase client initialized with service key (first 20 chars: {supabase_
 origins = [
     "http://localhost:3000",  # Your React dev server
     "http://localhost:5173",  # Another common React dev server
-    # Add your Vercel production URL when you deploy
-    "https://ai-detector-h1zf.vercel.app/"
+    # Add your production frontend URLs here (without trailing slashes)
+    "https://ai-detector-h1zf.vercel.app",  # Vercel deployment
+    # Add more frontend URLs as needed
     # Ngrok URLs will be added dynamically - you can also add them here manually
     # Example: "https://abc123.ngrok.io"
 ]
 
+# Also allow frontend URL from environment variable
+frontend_url = os.environ.get("FRONTEND_URL")
+if frontend_url:
+    # Remove trailing slash and add to origins
+    frontend_url = frontend_url.rstrip('/')
+    if frontend_url not in origins:
+        origins.append(frontend_url)
+        print(f"Added frontend URL to CORS: {frontend_url}")
+
 # Allow ngrok URLs dynamically (for testing)
 # You can also set ALLOW_ALL_ORIGINS=true in .env for testing
 allow_all_origins = os.environ.get("ALLOW_ALL_ORIGINS", "false").lower() == "true"
+
+# Print allowed origins for debugging
+print(f"Allowed CORS origins: {origins}")
 
 if allow_all_origins:
     print("⚠️  WARNING: CORS is set to allow all origins (for testing only!)")
@@ -61,7 +74,7 @@ else:
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 

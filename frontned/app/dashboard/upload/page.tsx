@@ -11,7 +11,8 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+// Remove trailing slash from backend URL to avoid double slashes
+const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 export default function UploadPage() {
   const router = useRouter()
@@ -40,8 +41,9 @@ export default function UploadPage() {
         throw new Error('No authentication token available')
       }
 
-      // Call backend API for analysis
-      const response = await fetch(`${BACKEND_URL}/analyze-document`, {
+      // Call backend API for analysis (ensure single slash)
+      const apiUrl = `${BACKEND_URL}/analyze-document`.replace(/([^:]\/)\/+/g, '$1')
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
