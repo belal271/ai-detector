@@ -38,7 +38,7 @@ origins = [
     "http://localhost:3000",  # Your React dev server
     "http://localhost:5173",  # Another common React dev server
     # Add your Vercel production URL when you deploy
-    # "https://your-frontend-app-name.vercel.app"
+    "https://ai-detector-h1zf.vercel.app/"
     # Ngrok URLs will be added dynamically - you can also add them here manually
     # Example: "https://abc123.ngrok.io"
 ]
