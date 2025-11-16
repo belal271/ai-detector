@@ -2,8 +2,9 @@ import os
 import uvicorn
 import asyncio
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from supabase import create_client, Client
 from typing import Optional
@@ -68,6 +69,7 @@ if allow_all_origins:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 else:
     app.add_middleware(
@@ -75,7 +77,38 @@ else:
         allow_origins=origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+        expose_headers=["*"],
+        max_age=3600,
+    )
+
+# Add exception handler to ensure CORS headers on all errors
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Ensure CORS headers are included in error responses"""
+    headers = dict(exc.headers) if exc.headers else {}
+    # Get origin from request
+    origin = request.headers.get("origin")
+    
+    # Determine allowed origin
+    if allow_all_origins:
+        cors_origin = "*"
+    elif origin and origin in origins:
+        cors_origin = origin
+    elif origins:
+        cors_origin = origins[0]  # Fallback to first allowed origin
+    else:
+        cors_origin = "*"
+    
+    headers["Access-Control-Allow-Origin"] = cors_origin
+    headers["Access-Control-Allow-Credentials"] = "true"
+    headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=headers
     )
 
 # --- 3. AUTHENTICATION HELPER ---
@@ -86,7 +119,12 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     Returns user info if valid.
     """
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+        # Return error with CORS headers
+        raise HTTPException(
+            status_code=401, 
+            detail="Missing or invalid authorization header",
+            headers={"Access-Control-Allow-Origin": "*"}
+        )
     
     token = authorization.replace("Bearer ", "")
     
@@ -95,17 +133,54 @@ async def verify_token(authorization: Optional[str] = Header(None)):
         # The admin client can verify user tokens
         user_response = supabase.auth.get_user(token)
         if not user_response or not user_response.user:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid token",
+                headers={"Access-Control-Allow-Origin": "*"}
+            )
         return user_response
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+        raise HTTPException(
+            status_code=401, 
+            detail=f"Token verification failed: {str(e)}",
+            headers={"Access-Control-Allow-Origin": "*"}
+        )
 
 # --- 4. PYDANTIC MODELS (Data Validation) ---
 # This defines what your frontend must send in its "package"
 class AnalysisRequest(BaseModel):
     text: str
 
-# --- 5. THE API ENDPOINT ---
+# --- 5. HANDLE OPTIONS REQUESTS (CORS Preflight) ---
+@app.options("/analyze-document")
+async def options_analyze_document(request: Request):
+    """Handle CORS preflight requests"""
+    origin = request.headers.get("origin")
+    
+    # Determine allowed origin
+    if allow_all_origins:
+        cors_origin = "*"
+    elif origin and origin in origins:
+        cors_origin = origin
+    elif origins:
+        cors_origin = origins[0]
+    else:
+        cors_origin = "*"
+    
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": cors_origin,
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Max-Age": "3600",
+        }
+    )
+
+# --- 6. THE API ENDPOINT ---
 @app.post("/analyze-document")
 async def analyze_document(
     request: AnalysisRequest,
