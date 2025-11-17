@@ -12,8 +12,8 @@ export function Sidebar() {
   const pathname = usePathname()
 
   const links = [
-    { href: '/dashboard/upload', label: 'Upload Document', icon: Upload },
-    { href: '/dashboard/history', label: 'Submission History', icon: History },
+    { href: '/dashboard/upload', label: 'Last opp dokument', icon: Upload },
+    { href: '/dashboard/history', label: 'Innleveringshistorikk', icon: History },
   ]
 
   return (
