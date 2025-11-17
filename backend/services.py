@@ -52,7 +52,7 @@ ai_analyst_model = genai.GenerativeModel(
 web_researcher_model = genai.GenerativeModel(
     'gemini-2.5-flash-preview-09-2025',
     system_instruction=web_researcher_prompt,
-    tools=[genai.Tool(google_search=genai.GoogleSearch())]
+    tools=["google_search"]
 )
 
 
