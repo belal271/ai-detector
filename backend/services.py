@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativai as genai
+import google.generativeai as genai
 
 # --- 1. CONFIGURE THE GEMINI CLIENT ---
 try:
