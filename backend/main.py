@@ -229,7 +229,6 @@ async def analyze_document(
     # --- Step 3: Combine the report (matching frontend structure) ---
     final_report = {
         "ai_likelihood": normalized_likelihood,
-        "ai_reasoning": ai_report.get("reasoning", ""),
         "online_sources": online_report.get("sources", []),
         "online_sources_count": len(online_report.get("sources", []))
     }

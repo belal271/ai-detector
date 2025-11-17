@@ -23,12 +23,12 @@ export default function UploadPage() {
 
   const handleSubmit = async () => {
     if (!text.trim()) {
-      toast.error('Please enter some text')
+      toast.error('Vennligst skriv inn tekst')
       return
     }
 
     if (!user) {
-      toast.error('You must be logged in to submit')
+      toast.error('Du må være innlogget for å sende inn')
       return
     }
 
@@ -38,7 +38,7 @@ export default function UploadPage() {
       // Get the session token for authentication
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        throw new Error('No authentication token available')
+        throw new Error('Ingen autentiseringstoken tilgjengelig')
       }
 
       // Call backend API for analysis (ensure single slash)
@@ -56,20 +56,20 @@ export default function UploadPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Analysis failed')
+        throw new Error(errorData.detail || 'Analyse mislyktes')
       }
 
       const result = await response.json()
       
-      toast.success('Analysis complete', {
-        description: 'Your document has been analyzed and saved',
+      toast.success('Analyse fullført', {
+        description: 'Dokumentet ditt har blitt analysert og lagret',
       })
       
       setText('')
       router.refresh()
     } catch (error: any) {
-      toast.error('Failed to analyze text', {
-        description: error.message || 'Please try again later',
+      toast.error('Kunne ikke analysere tekst', {
+        description: error.message || 'Vennligst prøv igjen senere',
       })
     } finally {
       setIsSubmitting(false)
@@ -78,16 +78,16 @@ export default function UploadPage() {
 
   return (
     <>
-      <Header title="Analyze New Document" />
+      <Header title="Analyser nytt dokument" />
       <div className="p-6 md:p-8">
         <Card className="border-border/40 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl">Analyze New Document</CardTitle>
-            <CardDescription>Paste your document text to check for plagiarism and AI-generated content</CardDescription>
+            <CardTitle className="text-2xl">Analyser nytt dokument</CardTitle>
+            <CardDescription>Lim inn dokumentteksten din for å sjekke for plagiat og AI-generert innhold</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
-              placeholder="Paste your document text here..."
+              placeholder="Lim inn dokumentteksten din her..."
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="min-h-80 resize-none bg-muted border-border/50 text-foreground placeholder:text-muted-foreground"
@@ -100,7 +100,7 @@ export default function UploadPage() {
               disabled={isSubmitting || userLoading}
               className="border-border/50"
             >
-              Clear
+              Tøm
             </Button>
             <Button
               onClick={handleSubmit}
@@ -110,10 +110,10 @@ export default function UploadPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Analyzing...
+                  Analyserer...
                 </>
               ) : (
-                'Analyze Text'
+                'Analyser tekst'
               )}
             </Button>
           </CardFooter>

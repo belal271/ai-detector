@@ -28,23 +28,23 @@ export default function LoginPage() {
       })
 
       if (error) {
-        toast.error('Login failed', {
-          description: error.message || 'Invalid email or password',
+        toast.error('Innlogging mislyktes', {
+          description: error.message || 'Ugyldig e-post eller passord',
         })
         setIsLoading(false)
         return
       }
 
       if (data.user) {
-        toast.success('Login successful', {
-          description: 'Redirecting to dashboard...',
+        toast.success('Innlogging vellykket', {
+          description: 'Omdirigerer til dashbord...',
         })
         router.push('/dashboard/upload')
         router.refresh()
       }
     } catch (error) {
-      toast.error('An unexpected error occurred', {
-        description: 'Please try again later',
+      toast.error('En uventet feil oppstod', {
+        description: 'Vennligst prøv igjen senere',
       })
       setIsLoading(false)
     }
@@ -60,12 +60,12 @@ export default function LoginPage() {
             </div>
             <CardTitle className="text-2xl font-bold">PlagiatKontroll</CardTitle>
           </div>
-          <CardDescription className="text-base">Sign in to your account</CardDescription>
+          <CardDescription className="text-base">Logg inn på din konto</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground font-medium">Email</Label>
+              <Label htmlFor="email" className="text-foreground font-medium">E-post</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -80,7 +80,7 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground font-medium">Password</Label>
+              <Label htmlFor="password" className="text-foreground font-medium">Passord</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -99,7 +99,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 h-auto"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? 'Logger inn...' : 'Logg inn'}
             </Button>
           </form>
         </CardContent>

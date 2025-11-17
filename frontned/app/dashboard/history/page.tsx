@@ -44,8 +44,8 @@ export default function HistoryPage() {
       const data = await getSubmissions()
       setSubmissions(data)
     } catch (error: any) {
-      toast.error('Failed to load submissions', {
-        description: error.message || 'Please try again later',
+      toast.error('Kunne ikke laste inn innleveringer', {
+        description: error.message || 'Vennligst prøv igjen senere',
       })
     } finally {
       setLoading(false)
@@ -60,8 +60,8 @@ export default function HistoryPage() {
     // Extract data from the report JSONB field
     const report = submission.report
     if (!report) {
-      toast.error('Report not available', {
-        description: 'This submission has not been analyzed yet',
+      toast.error('Rapport ikke tilgjengelig', {
+        description: 'Denne innleveringen har ikke blitt analysert ennå',
       })
       return
     }
@@ -79,14 +79,14 @@ export default function HistoryPage() {
 
   return (
     <>
-      <Header title="Submission History" />
+      <Header title="Innleveringshistorikk" />
       <div className="p-6 md:p-8 space-y-6">
         <Card className="border-border/40 shadow-lg">
           <div className="p-4 md:p-6">
             <div className="relative mb-6">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search by student name..."
+                placeholder="Søk etter studentnavn..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-muted border-border/50 text-foreground placeholder:text-muted-foreground"
@@ -100,17 +100,17 @@ export default function HistoryPage() {
                 </div>
               ) : filteredData.length === 0 ? (
                 <div className="flex items-center justify-center p-8 text-muted-foreground">
-                  {searchQuery ? 'No submissions found matching your search' : 'No submissions yet'}
+                  {searchQuery ? 'Ingen innleveringer funnet som matcher søket ditt' : 'Ingen innleveringer ennå'}
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/40 hover:bg-transparent">
-                      <TableHead className="text-foreground font-semibold">Student Name</TableHead>
-                      <TableHead className="text-foreground font-semibold">Date Submitted</TableHead>
-                      <TableHead className="text-foreground font-semibold">Text Preview</TableHead>
-                      <TableHead className="text-foreground font-semibold">Report Status</TableHead>
-                      <TableHead className="text-foreground font-semibold">Action</TableHead>
+                      <TableHead className="text-foreground font-semibold">Studentnavn</TableHead>
+                      <TableHead className="text-foreground font-semibold">Innleveringsdato</TableHead>
+                      <TableHead className="text-foreground font-semibold">Tekstforhåndsvisning</TableHead>
+                      <TableHead className="text-foreground font-semibold">Rapportstatus</TableHead>
+                      <TableHead className="text-foreground font-semibold">Handling</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -126,14 +126,14 @@ export default function HistoryPage() {
                               ? (submission.content.text.length > 100 
                                   ? submission.content.text.substring(0, 100) + '...'
                                   : submission.content.text)
-                              : 'No content'}
+                              : 'Ingen innhold'}
                           </p>
                         </TableCell>
                         <TableCell>
                           {submission.report ? (
-                            <Badge variant="default">Available</Badge>
+                            <Badge variant="default">Tilgjengelig</Badge>
                           ) : (
-                            <Badge variant="secondary">Pending</Badge>
+                            <Badge variant="secondary">Venter</Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -144,7 +144,7 @@ export default function HistoryPage() {
                             disabled={!submission.report}
                             className="border-border/50 hover:bg-muted"
                           >
-                            {submission.report ? 'View Report' : 'Report Pending'}
+                            {submission.report ? 'Se rapport' : 'Rapport venter'}
                           </Button>
                         </TableCell>
                       </TableRow>
