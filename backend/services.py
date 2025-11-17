@@ -12,25 +12,32 @@ except Exception as e:
     print(f"ERROR: Failed to configure Gemini. {e}")
     raise
 
-# --- 2. THE "WEB RESEARCHER" (V2 - Unchanged) ---
+# --- 2. THE "WEB RESEARCHER" (OLD, WORKING PROMPT) ---
+# This is the prompt that *was* working on Render because it
+# does NOT use the 'tools' parameter. It will search the model's
+# internal memory, not the live web, but it will not crash.
 web_researcher_prompt = """
-You are a simple and direct plagiarism detection service.
+You are an expert plagiarism detection specialist. Your task is to identify if the provided text has been copied or heavily paraphrased from online sources.
 
-Your *only* job is to do the following:
-1.  You will be given a text (in Norwegian or English).
-2.  You will use your `Google Search` tool to find pages on the web that contain 
-    exact or near-exact matches to sentences or paragraphs from this text.
-3.  You will *only* report sources that your `Google Search` tool *actually finds*. 
-    Do not use your internal knowledge.
+The text may be in Norwegian or English.
 
-Return your findings as a JSON object with one key: "sources".
-"sources" must be an array of objects. Each object must have:
-1. "url": The source URL.
-2. "title": The page title.
-3. "snippet": A small quote of the matching text from the *user's input*.
+IMPORTANT: You have access to a vast knowledge base. Use your training data to identify if this text matches content from:
+- Wikipedia articles
+- News websites
+- Educational websites
+- Blogs and online articles
+- Academic sources
+- Any other online publications
 
-If your `Google Search` tool finds no relevant matches, you MUST return 
-an empty "sources" array: { "sources": [] }
+If you recognize the text or parts of it as matching known online sources, provide those sources.
+
+Return a JSON object with one key: "sources".
+"sources" should be an array of objects. Each object must have:
+1. "url": The source URL (use a placeholder like "https://wikipedia.org/" if you know the domain)
+2. "title": The page/article title (if you recognize it)
+3. "snippet": A quote from the text that matches the source
+
+If the text appears to be original, return an empty "sources" array: { "sources": [] }
 """
 
 # --- 3. MODEL & CONFIGURATION SETUP ---
@@ -49,14 +56,17 @@ ai_analyst_model = genai.GenerativeModel(
     'gemini-2.5-flash-preview-09-2025'
 )
 
+# --- THIS IS THE CRITICAL FIX ---
+# We are creating the web model just like your old, working file.
+# The `tools` parameter is REMOVED to prevent the crash.
 web_researcher_model = genai.GenerativeModel(
     'gemini-2.5-flash-preview-09-2025',
-    system_instruction=web_researcher_prompt,
-    tools=["google_search"]
+    system_instruction=web_researcher_prompt
+    # NO `tools` PARAMETER = NO CRASH
 )
 
 
-# --- 4. ASYNC FUNCTIONS (THE "AI ANALYST" IS NOW V10.1) ---
+# --- 4. ASYNC FUNCTIONS (AI ANALYST IS V10.1) ---
 
 async def analyze_ai_likelihood(text: str) -> dict:
     """
@@ -118,7 +128,7 @@ async def find_online_plagiarism(text: str) -> dict:
     """
     try:
         response = await web_researcher_model.generate_content_async(
-            text, 
+            text, # Send just the text (the prompt is in the system_instruction)
             generation_config=web_researcher_config
         )
         return json.loads(response.text)
